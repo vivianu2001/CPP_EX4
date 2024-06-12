@@ -85,6 +85,67 @@ public:
         return PreOrderIterator(nullptr);
     }
 
+    class PostOrderIterator {
+    private:
+        Node<T>* current;
+        std::stack<Node<T>*> node_stack;
+        std::stack<Node<T>*> output_stack;
+
+    public:
+        PostOrderIterator(Node<T>* root) {
+            if (root) {
+                node_stack.push(root);
+                while (!node_stack.empty()) {
+                    Node<T>* node = node_stack.top();
+                    node_stack.pop();
+                    output_stack.push(node);
+                    for (auto child : node->children) {
+                        node_stack.push(child);
+                    }
+                }
+                if (!output_stack.empty()) {
+                    current = output_stack.top();
+                    output_stack.pop();
+                } else {
+                    current = nullptr;
+                }
+            } else {
+                current = nullptr;
+            }
+        }
+
+        bool operator!=(const PostOrderIterator& other) const {
+            return current != other.current;
+        }
+
+        PostOrderIterator& operator++() {
+            if (!output_stack.empty()) {
+                current = output_stack.top();
+                output_stack.pop();
+            } else {
+                current = nullptr;
+            }
+            return *this;
+        }
+
+        Node<T>& operator*() const {
+            return *current;
+        }
+
+        Node<T>* operator->() const {
+            return current;
+        }
+    };
+
+    PostOrderIterator begin_post_order() {
+        return PostOrderIterator(root);
+    }
+
+    PostOrderIterator end_post_order() {
+        return PostOrderIterator(nullptr);
+    }
+
+
 private:
     Node<T>* find_node(Node<T>* node, const T& key) {
         if (!node) return nullptr;
@@ -95,4 +156,6 @@ private:
         }
         return nullptr;
     }
+
+    
 };

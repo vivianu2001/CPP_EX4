@@ -5,8 +5,7 @@
 
 using namespace std;
 
-int main()
-{
+int main() {
     Node<double> root_node(1.1);
     Tree<double> tree; // Binary tree that contains doubles.
     tree.add_root(root_node);
@@ -31,9 +30,15 @@ int main()
      *  1.4  1.5  1.6
      */
 
+    cout << "Pre-Order Traversal:" << endl;
     for (auto node = tree.begin_pre_order(); node != tree.end_pre_order(); ++node) {
         cout << node->get_value() << endl;
     } // prints: 1.1, 1.2, 1.4, 1.5, 1.3, 1.6
+
+    cout << "\nPost-Order Traversal:" << endl;
+    for (auto node = tree.begin_post_order(); node != tree.end_post_order(); ++node) {
+        cout << node->get_value() << endl;
+    } // prints: 1.4, 1.5, 1.2, 1.6, 1.3, 1.1
 
     return 0;
 }
