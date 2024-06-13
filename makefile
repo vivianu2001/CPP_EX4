@@ -1,16 +1,19 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra
-TARGET = main
+CXXFLAGS = -std=c++2a -Wall -Wextra -fPIC -Wno-deprecated-enum-enum-conversion `pkg-config --cflags Qt5Widgets`
+LDFLAGS = `pkg-config --libs Qt5Widgets`
+SOURCES = main.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+EXECUTABLE = TreeVisualizer
 
-all: $(TARGET)
+all: $(EXECUTABLE)
 
-$(TARGET): main.o
-	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
-main.o: main.cpp tree.hpp node.hpp
-	$(CXX) $(CXXFLAGS) -c main.cpp
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(OBJECTS) $(EXECUTABLE)

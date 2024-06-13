@@ -1,39 +1,37 @@
 #pragma once
 #include "node.hpp"
+#include <QApplication>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsTextItem>
 #include <iostream>
-#include <vector>
-#include <queue>
 #include <stack>
-#include <algorithm>
+#include <queue>
 
-template <typename T>
+template <typename T, size_t K = 2>
 class Tree {
 private:
     Node<T>* root;
-    size_t max_children;
 
 public:
-    Tree(size_t k = 2) : root(nullptr), max_children(k) {}
-    ~Tree() {
-        delete root;  // The destructor of Node will recursively delete all children
-    }
+    Tree() : root(nullptr) {}
+    ~Tree() { delete root; }
 
     void add_root(const Node<T>& node) {
         if (root) {
             delete root;
         }
-        root = new Node<T>(node);
+        root = new Node<T>(node.get_value()); // Ensure correct value initialization
     }
 
     bool add_sub_node(const Node<T>& parent_node, const Node<T>& child_node) {
         Node<T>* parent = find_node(root, parent_node.get_value());
-        if (parent && parent->children.size() < max_children) {
-            parent->add_child(new Node<T>(child_node));
+        if (parent && parent->children.size() < K) {
+            parent->add_child(new Node<T>(child_node.get_value())); // Ensure correct value initialization
             return true;
         }
         return false;
     }
-
     // PreOrderIterator class
     class PreOrderIterator {
     private:
@@ -315,90 +313,175 @@ public:
         return DFSIterator(nullptr);
     }
 
-class HeapIterator {
-private:
-    std::vector<Node<T>*> heap;
-    size_t index;
+    class HeapIterator {
+    private:
+        std::vector<Node<T>*> heap;
+        size_t index;
 
-    void heapify(Node<T>* root) {
-        if (!root) return;
-        std::vector<Node<T>*> nodes;
-        std::queue<Node<T>*> node_queue;
-        node_queue.push(root);
-        
-        while (!node_queue.empty()) {
-            Node<T>* node = node_queue.front();
-            node_queue.pop();
-            nodes.push_back(node);
-            for (auto child : node->children) {
-                node_queue.push(child);
+        void heapify(Node<T>* root) {
+            if (!root) return;
+            std::vector<Node<T>*> nodes;
+            std::queue<Node<T>*> node_queue;
+            node_queue.push(root);
+
+            while (!node_queue.empty()) {
+                Node<T>* node = node_queue.front();
+                node_queue.pop();
+                nodes.push_back(node);
+                for (auto child : node->children) {
+                    node_queue.push(child);
+                }
             }
-        }
-        
-        std::make_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
-            return a->get_value() > b->get_value();
-        });
 
-        // Extract elements to form the sorted heap
-        while (!nodes.empty()) {
-            std::pop_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
+            std::make_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
                 return a->get_value() > b->get_value();
             });
-            heap.push_back(nodes.back());
-            nodes.pop_back();
+
+            // Extract elements to form the sorted heap
+            while (!nodes.empty()) {
+                std::pop_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
+                    return a->get_value() > b->get_value();
+                });
+                heap.push_back(nodes.back());
+                nodes.pop_back();
+            }
+        }
+
+        // Private constructor for creating end iterator
+        HeapIterator(size_t end_index) : index(end_index) {}
+
+    public:
+        HeapIterator(Node<T>* root) : index(0) {
+            heapify(root);
+            // std::cout << "Heap created with " << heap.size() << " elements." << std::endl;
+            // for (auto node : heap) {
+            //     std::cout << node->get_value() << " ";
+            // }
+            // std::cout << std::endl;
+        }
+
+        bool operator!=(const HeapIterator& other) const {
+            return index != other.index;
+        }
+
+        HeapIterator& operator++() {
+            if (index < heap.size()) {
+                ++index;
+            }
+            return *this;
+        }
+
+        Node<T>& operator*() const {
+            return *heap[index];
+        }
+
+        Node<T>* operator->() const {
+            return heap[index];
+        }
+
+        friend class Tree;
+    };
+
+    HeapIterator begin_heap() {
+        return HeapIterator(root);
+    }
+
+    HeapIterator end_heap() {
+        HeapIterator end_it = begin_heap();
+        end_it.index = end_it.heap.size();
+        return end_it;
+    }
+
+    void drawTree(QGraphicsScene& scene, Node<T>* node, int x, int y, int dx) const {
+        if (!node) return;
+
+        QGraphicsTextItem* text = scene.addText(QString::number(node->get_value()));
+        text->setPos(x, y);
+
+        int childX = x - (dx / 2);
+        int childY = y + 50;
+        for (Node<T>* child : node->children) {
+            scene.addLine(x + 10, y + 10, childX + 10, childY + 10);
+            drawTree(scene, child, childX, childY, dx / 2);
+            childX += dx;
         }
     }
 
-    // Private constructor for creating end iterator
-    HeapIterator(size_t end_index) : index(end_index) {}
+    void print() const {
+        int argc = 0;
+        char *argv[] = {(char *)"TreeVisualizer"};
+        QApplication app(argc, argv);
+        QGraphicsScene scene;
+        QGraphicsView view(&scene);
 
-public:
-    HeapIterator(Node<T>* root) : index(0) {
-        heapify(root);
-        std::cout << "Heap created with " << heap.size() << " elements." << std::endl;
-        for (auto node : heap) {
-            std::cout << node->get_value() << " ";
+        drawTree(scene, root, 400, 50, 200);
+
+        view.show();
+        app.exec();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Tree<T, K>& tree) {
+        tree.print();
+        return os;
+    }
+ // Iterator class for range-based for loops
+    class Iterator {
+    private:
+        Node<T>* current;
+        std::queue<Node<T>*> nodes_queue;
+
+        void traverse(Node<T>* node) {
+            if (node) {
+                nodes_queue.push(node);
+                for (auto child : node->children) {
+                    traverse(child);
+                }
+            }
         }
-        std::cout << std::endl;
-    }
 
-    bool operator!=(const HeapIterator& other) const {
-        return index != other.index;
-    }
-
-    HeapIterator& operator++() {
-        if (index < heap.size()) {
-            ++index;
+    public:
+        Iterator(Node<T>* root) : current(nullptr) {
+            if (root) {
+                traverse(root);
+                current = nodes_queue.front();
+                nodes_queue.pop();
+            }
         }
-        return *this;
+
+        Iterator& operator++() {
+            if (!nodes_queue.empty()) {
+                current = nodes_queue.front();
+                nodes_queue.pop();
+            } else {
+                current = nullptr;
+            }
+            return *this;
+        }
+
+        Node<T>& operator*() const {
+            return *current;
+        }
+
+        Node<T>* operator->() const {
+            return current;
+        }
+
+        bool operator!=(const Iterator& other) const {
+            return current != other.current;
+        }
+    };
+
+    Iterator begin() const {
+        return Iterator(root);
     }
 
-    Node<T>& operator*() const {
-        return *heap[index];
+    Iterator end() const {
+        return Iterator(nullptr);
     }
-
-    Node<T>* operator->() const {
-        return heap[index];
-    }
-
-    friend class Tree;
-};
-
-
-HeapIterator begin_heap() {
-    return HeapIterator(root);
-}
-
-HeapIterator end_heap() {
-    HeapIterator end_it = begin_heap();
-    end_it.index = end_it.heap.size();
-    return end_it;
-}
-
 
 
 private:
-    Node<T>* find_node(Node<T>* node, const T& key) {
+    Node<T>* find_node(Node<T>* node, const T& key) const {
         if (!node) return nullptr;
         if (node->get_value() == key) return node;
         for (Node<T>* child : node->children) {

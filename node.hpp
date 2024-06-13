@@ -1,26 +1,20 @@
-// umanskyvivian@gmail.com
 #pragma once
-#include <iostream>
 #include <vector>
 
 template <typename T>
 class Node {
 public:
     T value;
-    std::vector<Node<T>*> children;
+    std::vector<Node*> children;
 
-    Node(const T& val) : value(val) {}
+    Node(T val) : value(val) {}
+    T get_value() const { return value; }
+    void add_child(Node* child) { children.push_back(child); }
+
+    // Destructor to delete all child nodes
     ~Node() {
-        for (Node<T>* child : children) {
+        for (auto child : children) {
             delete child;
         }
-    }
-
-    T get_value() const {
-        return value;
-    }
-
-    void add_child(Node<T>* child) {
-        children.push_back(child);
     }
 };
