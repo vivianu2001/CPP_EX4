@@ -1,0 +1,10 @@
+{
+   glib suppression
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:calloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   ...
+}
