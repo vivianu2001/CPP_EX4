@@ -3,18 +3,27 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
+                "/home/vivian/CPP_EX4/**",
                 "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
-                "/usr/include/x86_64-linux-gnu/qt5"
+                "/usr/include/x86_64-linux-gnu/qt5",
+                "/usr/include/x86_64-linux-gnu/qt5/QtCore"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++2a",
-            "intelliSenseMode": "linux-clang-x64"
-            "compilerArgs": [
-                "-std=c++2a"
-            ]
+            "intelliSenseMode": "linux-clang-x64",
+            "compilerPathInCppPropertiesJson": "/usr/bin/clang",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "/home/vivian/CPP_EX4/**",
+                    "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
+                    "/usr/include/x86_64-linux-gnu/qt5",
+                    "/home/vivian/CPP_EX4"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4

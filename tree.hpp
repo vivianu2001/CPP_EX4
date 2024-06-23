@@ -7,6 +7,9 @@
 #include <iostream>
 #include <stack>
 #include <queue>
+#include "complex.hpp"
+#include "value_to_qstring.hpp"
+#include <unordered_set>
 
 template <typename T, size_t K = 2>
 class Tree {
@@ -258,8 +261,7 @@ public:
         return BFSIterator(nullptr);
     }
 
-    // DFSIterator class
-    class DFSIterator {
+  class DFSIterator {
     private:
         Node<T>* current;
         std::stack<Node<T>*> node_stack;
@@ -334,17 +336,20 @@ public:
             }
 
             std::make_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
-                return a->get_value() > b->get_value();
+                return a->get_value() > b->get_value(); // Min-heap comparator
             });
 
             // Extract elements to form the sorted heap
             while (!nodes.empty()) {
                 std::pop_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
-                    return a->get_value() > b->get_value();
+                    return a->get_value() > b->get_value(); // Min-heap comparator
                 });
                 heap.push_back(nodes.back());
                 nodes.pop_back();
             }
+
+            // Reverse to maintain min-heap order
+            //std::reverse(heap.begin(), heap.end());
         }
 
         // Private constructor for creating end iterator
@@ -353,11 +358,6 @@ public:
     public:
         HeapIterator(Node<T>* root) : index(0) {
             heapify(root);
-            // std::cout << "Heap created with " << heap.size() << " elements." << std::endl;
-            // for (auto node : heap) {
-            //     std::cout << node->get_value() << " ";
-            // }
-            // std::cout << std::endl;
         }
 
         bool operator!=(const HeapIterator& other) const {
@@ -382,20 +382,21 @@ public:
         friend class Tree;
     };
 
-    HeapIterator begin_heap() {
+    HeapIterator begin_heap() const {
         return HeapIterator(root);
     }
 
-    HeapIterator end_heap() {
+    HeapIterator end_heap() const {
         HeapIterator end_it = begin_heap();
         end_it.index = end_it.heap.size();
         return end_it;
     }
 
-    void drawTree(QGraphicsScene& scene, Node<T>* node, int x, int y, int dx) const {
+
+      void drawTree(QGraphicsScene& scene, Node<T>* node, int x, int y, int dx) const {
         if (!node) return;
 
-        QGraphicsTextItem* text = scene.addText(QString::number(node->get_value()));
+        QGraphicsTextItem* text = scene.addText(valueToQString(node->get_value()));
         text->setPos(x, y);
 
         int childX = x - (dx / 2);
@@ -407,7 +408,7 @@ public:
         }
     }
 
-    void print() const {
+    void printTree() const {
         int argc = 0;
         char *argv[] = {(char *)"TreeVisualizer"};
         QApplication app(argc, argv);
@@ -420,10 +421,58 @@ public:
         app.exec();
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Tree<T, K>& tree) {
-        tree.print();
-        return os;
+    void drawHeap(QGraphicsScene& scene, const std::vector<Node<T>*>& heap, int x, int y, int dx) const {
+        if (heap.empty()) return;
+
+        int depth = 0;
+        int index = 0;
+        int nodeCount = heap.size();
+
+        while (index < nodeCount) {
+            int levelNodeCount = std::pow(2, depth);
+            int startX = x - (dx * levelNodeCount) / 2;
+
+            for (int i = 0; i < levelNodeCount && index < nodeCount; ++i, ++index) {
+                int posX = startX + i * dx;
+                int posY = y + depth * 50;
+                QGraphicsTextItem* text = scene.addText(valueToQString(heap[index]->get_value()));
+                text->setPos(posX, posY);
+
+                if (index > 0) {
+                    int parentIndex = (index - 1) / 2;
+                    int parentPosX = startX + (parentIndex % levelNodeCount) * dx;
+                    int parentPosY = y + (depth - 1) * 50;
+                    scene.addLine(posX + 10, posY + 10, parentPosX + 10, parentPosY + 10);
+                }
+            }
+            ++depth;
+        }
     }
+
+    void printHeap() const {
+        int argc = 0;
+        char *argv[] = {(char *)"HeapVisualizer"};
+        QApplication app(argc, argv);
+        QGraphicsScene scene;
+        QGraphicsView view(&scene);
+
+        std::vector<Node<T>*> heap;
+        HeapIterator heap_it(root);
+        while (heap_it != end_heap()) {
+            heap.push_back(&(*heap_it));
+            ++heap_it;
+        }
+
+        drawHeap(scene, heap, 400, 50, 100);
+
+        view.show();
+        app.exec();
+    }
+
+    // friend std::ostream& operator<<(std::ostream& os, const Tree<T, N>& tree) {
+    //     tree.printTree();
+    //     return os;
+    // }
  // Iterator class for range-based for loops
     class Iterator {
     private:
@@ -489,5 +538,34 @@ private:
             if (result) return result;
         }
         return nullptr;
+    }
+     void heapify(Node<T>* node, std::vector<Node<T>*>& heap) const {
+        if (!node) return;
+        std::vector<Node<T>*> nodes;
+        std::queue<Node<T>*> node_queue;
+        node_queue.push(node);
+
+        while (!node_queue.empty()) {
+            Node<T>* n = node_queue.front();
+            node_queue.pop();
+            nodes.push_back(n);
+            for (auto child : n->children) {
+                node_queue.push(child);
+            }
+        }
+
+        std::make_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
+            return a->get_value() > b->get_value(); // Min-heap comparator
+        });
+
+        while (!nodes.empty()) {
+            std::pop_heap(nodes.begin(), nodes.end(), [](Node<T>* a, Node<T>* b) {
+                return a->get_value() > b->get_value(); // Min-heap comparator
+            });
+            heap.push_back(nodes.back());
+            nodes.pop_back();
+        }
+
+        std::reverse(heap.begin(), heap.end()); // Reverse to maintain min-heap order
     }
 };
