@@ -529,38 +529,58 @@ public:
         view.show();
         app.exec();
     }
-    void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
+void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
+{
+    if (heap.empty())
+        return;
+
+    int nodeCount = heap.size();
+    int textOffsetY = 15; // Adjust this value to raise or lower the text
+    int circleRadius = 25; // Radius for the circle representing nodes
+    int verticalSpacing = 80; // Vertical spacing between levels
+    QColor nodeColor = Qt::lightGray; // Color for the nodes
+    QPen linePen(Qt::darkGray); // Pen for the lines
+    QFont textFont("Arial", 12, QFont::Bold); // Font for the text
+
+    for (int index = 0; index < nodeCount; ++index)
     {
-        if (heap.empty())
-            return;
+        int level = static_cast<int>(std::log2(index + 1));
+        int levelStartIndex = std::pow(2, level) - 1;
+        int levelOffset = index - levelStartIndex;
+        int nodesInLevel = std::pow(2, level);
 
-        int depth = 0;
-        int index = 0;
-        int nodeCount = heap.size();
+        int posX = x + (levelOffset - (nodesInLevel - 1) / 2.0) * dx;
+        int posY = y + level * verticalSpacing;
 
-        while (index < nodeCount)
+        // Draw the circle for the node
+        QGraphicsEllipseItem *circle = scene.addEllipse(posX - circleRadius, posY - circleRadius, circleRadius * 2, circleRadius * 2);
+        circle->setBrush(nodeColor);
+        circle->setPen(QPen(Qt::black));
+
+        // Draw the text inside the circle
+        QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
+        text->setFont(textFont);
+        text->setDefaultTextColor(Qt::black);
+        text->setPos(posX - textOffsetY, posY - textOffsetY);
+
+        if (index > 0)
         {
-            int levelNodeCount = std::pow(2, depth);
-            int startX = x - (dx * levelNodeCount) / 2;
+            int parentIndex = (index - 1) / 2;
+            int parentLevel = static_cast<int>(std::log2(parentIndex + 1));
+            int parentLevelStartIndex = std::pow(2, parentLevel) - 1;
+            int parentLevelOffset = parentIndex - parentLevelStartIndex;
+            int parentNodesInLevel = std::pow(2, parentLevel);
 
-            for (int i = 0; i < levelNodeCount && index < nodeCount; ++i, ++index)
-            {
-                int posX = startX + i * dx;
-                int posY = y + depth * 50;
-                QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
-                text->setPos(posX, posY);
-
-                if (index > 0)
-                {
-                    int parentIndex = (index - 1) / 2;
-                    int parentPosX = startX + (parentIndex % levelNodeCount) * dx;
-                    int parentPosY = y + (depth - 1) * 50;
-                    scene.addLine(posX + 10, posY + 10, parentPosX + 10, parentPosY + 10);
-                }
-            }
-            ++depth;
+            int parentPosX = x + (parentLevelOffset - (parentNodesInLevel - 1) / 2.0) * dx;
+            int parentPosY = y + parentLevel * verticalSpacing;
+            scene.addLine(posX, posY - circleRadius, parentPosX, parentPosY + circleRadius, linePen);
         }
     }
+}
+
+
+
+
 
     void printHeap() const
     {
