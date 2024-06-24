@@ -10,6 +10,7 @@
 #include "complex.hpp"
 #include "value_to_qstring.hpp"
 #include <QTimer>
+#include <QtWidgets/QGraphicsDropShadowEffect>
 
 template <typename T, size_t K = 2>
 class Tree
@@ -497,24 +498,54 @@ public:
         end_it.index = end_it.heap.size();
         return end_it;
     }
+    void drawTree(QGraphicsScene &scene, Node<T> *node, int x, int y, int dx, int dy, int level = 0) const
+{
+    if (!node)
+        return;
 
-    void drawTree(QGraphicsScene &scene, Node<T> *node, int x, int y, int dx) const
+    if (level == 0)
     {
-        if (!node)
-            return;
-
-        QGraphicsTextItem *text = scene.addText(valueToQString(node->get_value()));
-        text->setPos(x, y);
-
-        int childX = x - (dx / 2);
-        int childY = y + 50;
-        for (Node<T> *child : node->children)
-        {
-            scene.addLine(x + 10, y + 10, childX + 10, childY + 10);
-            drawTree(scene, child, childX, childY, dx / 2);
-            childX += dx;
-        }
+        scene.setBackgroundBrush(QBrush(QColor(255, 228, 181))); // Light orange background color
     }
+
+    int circleRadius = 25;                // Radius for the circle representing nodes
+    QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
+    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    gradient.setColorAt(0, QColor(255, 140, 0)); // Orange
+    gradient.setColorAt(1, QColor(255, 69, 0));  // Red
+    QPen linePen(QColor(139, 0, 0), 2);          // Dark red color for the lines, thicker lines
+    QFont textFont("Arial", 10, QFont::Bold);    // Font for the text
+
+    // Draw the circle for the node with gradient
+    QGraphicsEllipseItem *circle = scene.addEllipse(x - circleRadius, y - circleRadius, circleRadius * 2, circleRadius * 2);
+    circle->setBrush(gradient);
+    circle->setPen(QPen(Qt::black));
+
+    // Adding shadow effect
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+    shadow->setBlurRadius(15);
+    shadow->setOffset(5, 5);
+    circle->setGraphicsEffect(shadow);
+
+    // Draw the text inside the circle
+    QGraphicsTextItem *text = scene.addText(valueToQString(node->get_value()));
+    text->setFont(textFont);
+    text->setDefaultTextColor(Qt::white);
+
+    QRectF textRect = text->boundingRect();
+    text->setPos(x - textRect.width() / 2, y - textRect.height() / 2);
+
+    int childCount = node->children.size();
+    int childX = x - dx * (childCount - 1) / 2; // Adjust horizontal position to center children
+    int childY = y + dy; // Increase the length of the line between levels
+
+    for (Node<T> *child : node->children)
+    {
+        scene.addLine(x, y + circleRadius, childX, childY - circleRadius, linePen);
+        drawTree(scene, child, childX, childY, dx / 2, dy+10, level + 1); // Keep the same dx for horizontal spacing
+        childX += dx; // Move to the next sibling position
+    }
+}
 
     void printTree() const
     {
@@ -524,63 +555,72 @@ public:
         QGraphicsScene scene;
         QGraphicsView view(&scene);
 
-        drawTree(scene, root, 400, 50, 200);
+        drawTree(scene, root, 700, 5, 700, 150);
 
         view.show();
         app.exec();
     }
-void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
-{
-    if (heap.empty())
-        return;
-
-    int nodeCount = heap.size();
-    int textOffsetY = 15; // Adjust this value to raise or lower the text
-    int circleRadius = 25; // Radius for the circle representing nodes
-    int verticalSpacing = 80; // Vertical spacing between levels
-    QColor nodeColor = Qt::lightGray; // Color for the nodes
-    QPen linePen(Qt::darkGray); // Pen for the lines
-    QFont textFont("Arial", 12, QFont::Bold); // Font for the text
-
-    for (int index = 0; index < nodeCount; ++index)
+    void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
     {
-        int level = static_cast<int>(std::log2(index + 1));
-        int levelStartIndex = std::pow(2, level) - 1;
-        int levelOffset = index - levelStartIndex;
-        int nodesInLevel = std::pow(2, level);
+        if (heap.empty())
+            return;
 
-        int posX = x + (levelOffset - (nodesInLevel - 1) / 2.0) * dx;
-        int posY = y + level * verticalSpacing;
+        scene.setBackgroundBrush(QBrush(QColor(255, 228, 181))); // Light orange background color
 
-        // Draw the circle for the node
-        QGraphicsEllipseItem *circle = scene.addEllipse(posX - circleRadius, posY - circleRadius, circleRadius * 2, circleRadius * 2);
-        circle->setBrush(nodeColor);
-        circle->setPen(QPen(Qt::black));
+        int nodeCount = heap.size();
+        int circleRadius = 25;                // Radius for the circle representing nodes
+        int verticalSpacing = 80;             // Vertical spacing between levels
+        QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
+        gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        gradient.setColorAt(0, QColor(255, 140, 0)); // Orange
+        gradient.setColorAt(1, QColor(255, 69, 0));  // Red
+        QPen linePen(QColor(139, 0, 0), 2);          // Dark red color for the lines, thicker lines
+        QFont textFont("Arial", 12, QFont::Bold);    // Font for the text
 
-        // Draw the text inside the circle
-        QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
-        text->setFont(textFont);
-        text->setDefaultTextColor(Qt::black);
-        text->setPos(posX - textOffsetY, posY - textOffsetY);
-
-        if (index > 0)
+        for (int index = 0; index < nodeCount; ++index)
         {
-            int parentIndex = (index - 1) / 2;
-            int parentLevel = static_cast<int>(std::log2(parentIndex + 1));
-            int parentLevelStartIndex = std::pow(2, parentLevel) - 1;
-            int parentLevelOffset = parentIndex - parentLevelStartIndex;
-            int parentNodesInLevel = std::pow(2, parentLevel);
+            int level = static_cast<int>(std::log2(index + 1));
+            int levelStartIndex = std::pow(2, level) - 1;
+            int levelOffset = index - levelStartIndex;
+            int nodesInLevel = std::pow(2, level);
 
-            int parentPosX = x + (parentLevelOffset - (parentNodesInLevel - 1) / 2.0) * dx;
-            int parentPosY = y + parentLevel * verticalSpacing;
-            scene.addLine(posX, posY - circleRadius, parentPosX, parentPosY + circleRadius, linePen);
+            int posX = x + (levelOffset - (nodesInLevel - 1) / 2.0) * dx;
+            int posY = y + level * verticalSpacing;
+
+            // Draw the circle for the node with gradient
+            QGraphicsEllipseItem *circle = scene.addEllipse(posX - circleRadius, posY - circleRadius, circleRadius * 2, circleRadius * 2);
+            circle->setBrush(gradient);
+            circle->setPen(QPen(Qt::black));
+
+            // Adding shadow effect
+            QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+            shadow->setBlurRadius(15);
+            shadow->setOffset(5, 5);
+            circle->setGraphicsEffect(shadow);
+
+            // Draw the text inside the circle
+            QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
+            text->setFont(textFont);
+            text->setDefaultTextColor(Qt::white);
+
+            // Center the text
+            QRectF textRect = text->boundingRect();
+            text->setPos(posX - textRect.width() / 2, posY - textRect.height() / 2);
+
+            if (index > 0)
+            {
+                int parentIndex = (index - 1) / 2;
+                int parentLevel = static_cast<int>(std::log2(parentIndex + 1));
+                int parentLevelStartIndex = std::pow(2, parentLevel) - 1;
+                int parentLevelOffset = parentIndex - parentLevelStartIndex;
+                int parentNodesInLevel = std::pow(2, parentLevel);
+
+                int parentPosX = x + (parentLevelOffset - (parentNodesInLevel - 1) / 2.0) * dx;
+                int parentPosY = y + parentLevel * verticalSpacing;
+                scene.addLine(posX, posY - circleRadius, parentPosX, parentPosY + circleRadius, linePen);
+            }
         }
     }
-}
-
-
-
-
 
     void printHeap() const
     {
@@ -603,7 +643,6 @@ void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, 
         view.show();
         app.exec();
     }
-
 
     class Iterator
     {
