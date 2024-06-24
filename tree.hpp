@@ -555,7 +555,7 @@ public:
         QGraphicsScene scene;
         QGraphicsView view(&scene);
 
-        drawTree(scene, root, 700, 5, 700, 150);
+        drawTree(scene, root, 70, 10, 500, 150);
 
         view.show();
         app.exec();
