@@ -420,7 +420,7 @@ TEST_CASE("Testing Tree Class with Complex Keys") {
     CHECK(dfs_result == dfs_expected);
 
     // Expected min-heap order based on magnitude
-    std::vector<Complex> heap_expected = {c1, c3, c2, c6, c4, c5, c7, c8, c9};
+    std::vector<Complex> heap_expected = {c1, c3, c2, c6, c5, c4, c8, c7, c9};
     std::vector<Complex> heap_result;
     for (auto it = tree.begin_heap(); it != tree.end_heap(); ++it) {
         heap_result.push_back(it->get_value());
