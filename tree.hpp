@@ -101,6 +101,10 @@ public:
 
     PreOrderIterator begin_pre_order()
     {
+        if (K != 2)
+        {
+            throw std::logic_error("Pre-order traversal is only supported for binary trees.");
+        }
         return PreOrderIterator(root);
     }
 
@@ -181,6 +185,10 @@ public:
 
     PostOrderIterator begin_post_order()
     {
+         if (K != 2)
+        {
+            throw std::logic_error("Pre-order traversal is only supported for binary trees.");
+        }
         return PostOrderIterator(root);
     }
 
@@ -253,6 +261,10 @@ public:
 
     InOrderIterator begin_in_order()
     {
+         if (K != 2)
+        {
+            throw std::logic_error("Pre-order traversal is only supported for binary trees.");
+        }
         return InOrderIterator(root);
     }
 
@@ -326,6 +338,7 @@ public:
 
     BFSIterator begin_bfs_scan()
     {
+        
         return BFSIterator(root);
     }
 
@@ -499,53 +512,53 @@ public:
         return end_it;
     }
     void drawTree(QGraphicsScene &scene, Node<T> *node, int x, int y, int dx, int dy, int level = 0) const
-{
-    if (!node)
-        return;
-
-    if (level == 0)
     {
-        scene.setBackgroundBrush(QBrush(QColor(255, 228, 181))); // Light orange background color
+        if (!node)
+            return;
+
+        if (level == 0)
+        {
+            scene.setBackgroundBrush(QBrush(QColor(255, 228, 181))); // Light orange background color
+        }
+
+        int circleRadius = 25;                // Radius for the circle representing nodes
+        QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
+        gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        gradient.setColorAt(0, QColor(255, 140, 0)); // Orange
+        gradient.setColorAt(1, QColor(255, 69, 0));  // Red
+        QPen linePen(QColor(139, 0, 0), 2);          // Dark red color for the lines, thicker lines
+        QFont textFont("Arial", 10, QFont::Bold);    // Font for the text
+
+        // Draw the circle for the node with gradient
+        QGraphicsEllipseItem *circle = scene.addEllipse(x - circleRadius, y - circleRadius, circleRadius * 2, circleRadius * 2);
+        circle->setBrush(gradient);
+        circle->setPen(QPen(Qt::black));
+
+        // Adding shadow effect
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+        shadow->setBlurRadius(15);
+        shadow->setOffset(5, 5);
+        circle->setGraphicsEffect(shadow);
+
+        // Draw the text inside the circle
+        QGraphicsTextItem *text = scene.addText(valueToQString(node->get_value()));
+        text->setFont(textFont);
+        text->setDefaultTextColor(Qt::white);
+
+        QRectF textRect = text->boundingRect();
+        text->setPos(x - textRect.width() / 2, y - textRect.height() / 2);
+
+        int childCount = node->children.size();
+        int childX = x - dx * (childCount - 1) / 2; // Adjust horizontal position to center children
+        int childY = y + dy;                        // Increase the length of the line between levels
+
+        for (Node<T> *child : node->children)
+        {
+            scene.addLine(x, y + circleRadius, childX, childY - circleRadius, linePen);
+            drawTree(scene, child, childX, childY, dx / 2, dy + 10, level + 1); // Keep the same dx for horizontal spacing
+            childX += dx;                                                       // Move to the next sibling position
+        }
     }
-
-    int circleRadius = 25;                // Radius for the circle representing nodes
-    QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
-    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    gradient.setColorAt(0, QColor(255, 140, 0)); // Orange
-    gradient.setColorAt(1, QColor(255, 69, 0));  // Red
-    QPen linePen(QColor(139, 0, 0), 2);          // Dark red color for the lines, thicker lines
-    QFont textFont("Arial", 10, QFont::Bold);    // Font for the text
-
-    // Draw the circle for the node with gradient
-    QGraphicsEllipseItem *circle = scene.addEllipse(x - circleRadius, y - circleRadius, circleRadius * 2, circleRadius * 2);
-    circle->setBrush(gradient);
-    circle->setPen(QPen(Qt::black));
-
-    // Adding shadow effect
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
-    shadow->setBlurRadius(15);
-    shadow->setOffset(5, 5);
-    circle->setGraphicsEffect(shadow);
-
-    // Draw the text inside the circle
-    QGraphicsTextItem *text = scene.addText(valueToQString(node->get_value()));
-    text->setFont(textFont);
-    text->setDefaultTextColor(Qt::white);
-
-    QRectF textRect = text->boundingRect();
-    text->setPos(x - textRect.width() / 2, y - textRect.height() / 2);
-
-    int childCount = node->children.size();
-    int childX = x - dx * (childCount - 1) / 2; // Adjust horizontal position to center children
-    int childY = y + dy; // Increase the length of the line between levels
-
-    for (Node<T> *child : node->children)
-    {
-        scene.addLine(x, y + circleRadius, childX, childY - circleRadius, linePen);
-        drawTree(scene, child, childX, childY, dx / 2, dy+10, level + 1); // Keep the same dx for horizontal spacing
-        childX += dx; // Move to the next sibling position
-    }
-}
 
     void printTree() const
     {
@@ -650,14 +663,23 @@ public:
         Node<T> *current;
         std::queue<Node<T> *> nodes_queue;
 
-        void traverse(Node<T> *node)
+        void traverse(Node<T> *root)
         {
-            if (node)
+            if (!root)
+                return;
+
+            std::queue<Node<T> *> tempQueue;
+            tempQueue.push(root);
+
+            while (!tempQueue.empty())
             {
+                Node<T> *node = tempQueue.front();
+                tempQueue.pop();
                 nodes_queue.push(node);
+
                 for (auto child : node->children)
                 {
-                    traverse(child);
+                    tempQueue.push(child);
                 }
             }
         }
@@ -668,8 +690,11 @@ public:
             if (root)
             {
                 traverse(root);
-                current = nodes_queue.front();
-                nodes_queue.pop();
+                if (!nodes_queue.empty())
+                {
+                    current = nodes_queue.front();
+                    nodes_queue.pop();
+                }
             }
         }
 
