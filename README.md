@@ -80,4 +80,4 @@ Ensure you have the necessary dependencies installed. For QtCore and QtWidgets, 
 sudo apt-get install qtbase5-dev qt5-default
 
 make tree: Builds and runs the demo application.
-- make tests: Builds and runs the tests.
+make tests: Builds and runs the tests.
