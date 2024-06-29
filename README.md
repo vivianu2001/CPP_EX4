@@ -79,9 +79,5 @@ Ensure you have the necessary dependencies installed. For QtCore and QtWidgets, 
 ```sh
 sudo apt-get install qtbase5-dev qt5-default
 
-## Makefile
-
-The Makefile provides commands to build and run different parts of the project:
-
-- make tree: Builds and runs the demo application.
+make tree: Builds and runs the demo application.
 - make tests: Builds and runs the tests.
