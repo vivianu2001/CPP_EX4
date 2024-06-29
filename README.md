@@ -15,6 +15,8 @@
 - **node.hpp**: Defines the `Node` class representing each node in the tree.
 - **complex.hpp**: Defines the `Complex` class for handling complex data.
 - **value_to_qstring.hpp**: Utility functions for converting values to `QString`.
+- **test.cpp**: Contains tests for all iterators to ensure correctness.
+
 
 ## Tree Representation
 
@@ -64,6 +66,7 @@
 - **Functions**:
   - `QString valueToQString(int value)`: Converts an integer value to a `QString`.
 
+
 ## Dependencies
 
 The project uses the following libraries:
@@ -75,3 +78,10 @@ Ensure you have the necessary dependencies installed. For QtCore and QtWidgets, 
 
 ```sh
 sudo apt-get install qtbase5-dev qt5-default
+
+## Makefile
+
+The Makefile provides commands to build and run different parts of the project:
+
+- make tree: Builds and runs the demo application.
+- make tests: Builds and runs the tests.
