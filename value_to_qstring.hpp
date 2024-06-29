@@ -1,3 +1,4 @@
+//umanskyvivian@gmail.com
 #ifndef VALUE_TO_QSTRING_HPP
 #define VALUE_TO_QSTRING_HPP
 

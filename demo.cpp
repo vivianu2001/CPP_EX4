@@ -1,5 +1,6 @@
 /**
  * Demo app for Ex4
+ * umanskyvivian@gmail.com
  */
 #include <iostream>
 #include <string>

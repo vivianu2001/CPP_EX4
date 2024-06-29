@@ -1,26 +1,21 @@
-# Compiler and flags
+#umanskyvivian@gmail.com
 CXX = g++
 CXXFLAGS = -std=c++2a -Wall -Wextra -fPIC -Wno-deprecated-enum-enum-conversion `pkg-config --cflags Qt5Widgets`
 LDFLAGS = `pkg-config --libs Qt5Widgets`
 VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99 --suppressions=qt.supp
 
-
-
-# Sources and objects
 SOURCES_MAIN = main.cpp demo.cpp
 OBJECTS_MAIN = $(SOURCES_MAIN:.cpp=.o)
 
 SOURCES_TEST = TestCounter.cpp test.cpp
 OBJECTS_TEST = $(SOURCES_TEST:.cpp=.o)
 
-# Executables
 EXECUTABLE_MAIN = TreeVisualizer
 EXECUTABLE_TEST = test
 
-# Default target
+
 all: tree tests
 
-# Main application
 tree: $(EXECUTABLE_MAIN)
 	./$(EXECUTABLE_MAIN)
 

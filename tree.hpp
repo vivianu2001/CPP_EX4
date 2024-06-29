@@ -1,3 +1,4 @@
+//umanskyvivian@gmail.com
 #pragma once
 #include "node.hpp"
 #include <QApplication>
