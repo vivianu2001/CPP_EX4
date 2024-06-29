@@ -529,7 +529,7 @@ public:
         gradient.setColorAt(0, QColor(255, 105, 180)); // Strong pink
         gradient.setColorAt(1, QColor(199, 21, 133));  // Deep pink
         QPen linePen(QColor(0, 0, 0), 4);              // Thicker black lines
-        QFont textFont("Ariel", 10, QFont::Bold);      // Font for the text
+        QFont textFont("Ariel", 8, QFont::Bold);      // Font for the text
 
         // Draw the circle for the node with gradient
         QGraphicsEllipseItem *circle = scene.addEllipse(x - circleRadius, y - circleRadius, circleRadius * 2, circleRadius * 2);
@@ -590,7 +590,7 @@ public:
     gradient.setColorAt(0, QColor(255, 105, 180)); // Strong pink
     gradient.setColorAt(1, QColor(199, 21, 133));  // Deep pink
     QPen linePen(QColor(0, 0, 0), 4);              // Thicker black lines
-    QFont textFont("Arial", 10, QFont::Bold);      // Font for the text
+    QFont textFont("Arial", 8, QFont::Bold);      // Font for the text
 
     // Calculate the maximum width at the bottom level
     int maxLevel = static_cast<int>(std::log2(nodeCount));
