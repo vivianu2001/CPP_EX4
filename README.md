@@ -1,6 +1,7 @@
 # K-ary Tree Traversel 🌿 🤹‍♀️
 
 **Author:** Vivian Umansky
+
 **Email:** umanskyvivian@gmail.com
 
 ## Overview
@@ -20,7 +21,12 @@
 
 ## Tree Representation
 
-📊 Trees are represented using nodes connected by edges. Each node contains a value and pointers to its children nodes. The `Tree` class manages the root node and provides methods for manipulating the tree.
+Trees are represented using nodes connected by edges. Each node contains a value and pointers to its children nodes. The `Tree` class manages the root node and provides methods for manipulating the tree.
+
+### Visualization with Qt ✏️
+
+We use the Qt framework to provide a graphical representation of the tree. The `drawTree` method in the `Tree` class creates a visual representation of the tree structure using `QGraphicsScene` and `QGraphicsView`. Nodes are displayed as circles with their values inside, and edges are drawn as lines connecting the parent and child nodes.
+
 
 ## Implemented Classes and Methods
 
