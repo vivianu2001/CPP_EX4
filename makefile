@@ -4,7 +4,7 @@ CXXFLAGS = -std=c++2a -Wall -Wextra -fPIC -Wno-deprecated-enum-enum-conversion `
 LDFLAGS = `pkg-config --libs Qt5Widgets`
 VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99 --suppressions=qt.supp
 
-SOURCES_MAIN = main.cpp demo.cpp
+SOURCES_MAIN = demo.cpp
 OBJECTS_MAIN = $(SOURCES_MAIN:.cpp=.o)
 
 SOURCES_TEST = TestCounter.cpp test.cpp

@@ -10,7 +10,6 @@
 #include <queue>
 #include "complex.hpp"
 #include "value_to_qstring.hpp"
-#include <QTimer>
 #include <QtWidgets/QGraphicsDropShadowEffect>
 
 template <typename T, size_t K = 2>
@@ -426,7 +425,7 @@ public:
         std::vector<Node<T> *> heap;
         size_t index;
 
-        void heapify(Node<T> *root)
+        void myHeap(Node<T> *root)
         {
             if (!root)
                 return;
@@ -461,8 +460,7 @@ public:
                 nodes.pop_back();
             }
 
-            // Reverse to maintain min-heap order
-            // std::reverse(heap.begin(), heap.end());
+       
         }
 
         // Private constructor for creating end iterator
@@ -471,7 +469,7 @@ public:
     public:
         HeapIterator(Node<T> *root) : index(0)
         {
-            heapify(root);
+            myHeap(root);
         }
 
         bool operator!=(const HeapIterator &other) const
@@ -762,40 +760,5 @@ private:
         }
         return nullptr;
     }
-    void heapify(Node<T> *node, std::vector<Node<T> *> &heap) const
-    {
-        if (!node)
-            return;
-        std::vector<Node<T> *> nodes;
-        std::queue<Node<T> *> node_queue;
-        node_queue.push(node);
-
-        while (!node_queue.empty())
-        {
-            Node<T> *n = node_queue.front();
-            node_queue.pop();
-            nodes.push_back(n);
-            for (auto child : n->children)
-            {
-                node_queue.push(child);
-            }
-        }
-
-        std::make_heap(nodes.begin(), nodes.end(), [](Node<T> *a, Node<T> *b)
-                       {
-                           return a->get_value() > b->get_value(); // Min-heap comparator
-                       });
-
-        while (!nodes.empty())
-        {
-            std::pop_heap(nodes.begin(), nodes.end(), [](Node<T> *a, Node<T> *b)
-                          {
-                              return a->get_value() > b->get_value(); // Min-heap comparator
-                          });
-            heap.push_back(nodes.back());
-            nodes.pop_back();
-        }
-
-        std::reverse(heap.begin(), heap.end()); // Reverse to maintain min-heap order
-    }
+   
 };
