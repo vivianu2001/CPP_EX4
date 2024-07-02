@@ -1,4 +1,4 @@
-//umanskyvivian@gmail.com
+// umanskyvivian@gmail.com
 #pragma once
 #include "node.hpp"
 #include <QApplication>
@@ -425,7 +425,7 @@ public:
         std::vector<Node<T> *> heap;
         size_t index;
 
-        void myHeap(Node<T> *root)
+        void heapify(Node<T> *root)
         {
             if (!root)
                 return;
@@ -459,17 +459,12 @@ public:
                 heap.push_back(nodes.back());
                 nodes.pop_back();
             }
-
-       
         }
-
-        // Private constructor for creating end iterator
-        HeapIterator(size_t end_index) : index(end_index) {}
 
     public:
         HeapIterator(Node<T> *root) : index(0)
         {
-            myHeap(root);
+            heapify(root);
         }
 
         bool operator!=(const HeapIterator &other) const
@@ -496,8 +491,29 @@ public:
             return heap[index];
         }
 
-        friend class Tree;
+        size_t getIndex() const
+        {
+            return index;
+        }
+
+        void setIndex(size_t idx)
+        {
+            index = idx;
+        }
+
+        size_t getHeapSize() const
+        {
+            return heap.size();
+        }
     };
+
+    std::pair<HeapIterator, HeapIterator> myHeap()
+    {
+        HeapIterator begin_it(root);
+        HeapIterator end_it = begin_it;
+        end_it.setIndex(end_it.getHeapSize());
+        return {begin_it, end_it};
+    }
 
     HeapIterator begin_heap() const
     {
@@ -507,7 +523,7 @@ public:
     HeapIterator end_heap() const
     {
         HeapIterator end_it = begin_heap();
-        end_it.index = end_it.heap.size();
+        end_it.setIndex(end_it.getHeapSize());
         return end_it;
     }
     void drawTree(QGraphicsScene &scene, Node<T> *node, int x, int y, int dx, int dy, int level = 0) const
@@ -517,8 +533,7 @@ public:
 
         if (level == 0)
         {
-               scene.setBackgroundBrush(QBrush(QColor(255, 247, 241))); // Slightly darker gray background color
-
+            scene.setBackgroundBrush(QBrush(QColor(255, 247, 241))); // Slightly darker gray background color
         }
 
         int circleRadius = 35;                // Radius for the circle representing nodes
@@ -527,7 +542,7 @@ public:
         gradient.setColorAt(0, QColor(255, 105, 180)); // Strong pink
         gradient.setColorAt(1, QColor(199, 21, 133));  // Deep pink
         QPen linePen(QColor(0, 0, 0), 4);              // Thicker black lines
-        QFont textFont("Ariel", 8, QFont::Bold);      // Font for the text
+        QFont textFont("Ariel", 8, QFont::Bold);       // Font for the text
 
         // Draw the circle for the node with gradient
         QGraphicsEllipseItem *circle = scene.addEllipse(x - circleRadius, y - circleRadius, circleRadius * 2, circleRadius * 2);
@@ -573,96 +588,96 @@ public:
         view.show();
         app.exec();
     }
-   void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
-{
-    if (heap.empty())
-        return;
-
-    scene.setBackgroundBrush(QBrush(QColor(255, 247, 241))); // Slightly darker gray background color
-
-    int nodeCount = heap.size();
-    int circleRadius = 35;                // Radius for the circle representing nodes
-    int verticalSpacing = 100;             // Vertical spacing between levels
-    QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
-    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    gradient.setColorAt(0, QColor(255, 105, 180)); // Strong pink
-    gradient.setColorAt(1, QColor(199, 21, 133));  // Deep pink
-    QPen linePen(QColor(0, 0, 0), 4);              // Thicker black lines
-    QFont textFont("Arial", 8, QFont::Bold);      // Font for the text
-
-    // Calculate the maximum width at the bottom level
-    int maxLevel = static_cast<int>(std::log2(nodeCount));
-    int maxWidth = std::pow(2, maxLevel) * dx;
-
-    for (int index = 0; index < nodeCount; ++index)
+    void drawHeap(QGraphicsScene &scene, const std::vector<Node<T> *> &heap, int x, int y, int dx) const
     {
-        int level = static_cast<int>(std::log2(index + 1));
-        int levelStartIndex = std::pow(2, level) - 1;
-        int levelOffset = index - levelStartIndex;
-        int nodesInLevel = std::pow(2, level);
+        if (heap.empty())
+            return;
 
-        // Calculate horizontal position
-        int posX = x + (levelOffset * maxWidth / nodesInLevel) - (maxWidth / 2 - dx / 2);
-        int posY = y + level * verticalSpacing;
+        scene.setBackgroundBrush(QBrush(QColor(255, 247, 241))); // Slightly darker gray background color
 
-        // Draw the circle for the node with gradient
-        QGraphicsEllipseItem *circle = scene.addEllipse(posX - circleRadius, posY - circleRadius, circleRadius * 2, circleRadius * 2);
-        circle->setBrush(gradient);
-        circle->setPen(QPen(Qt::black, 2)); // Thicker border for nodes
+        int nodeCount = heap.size();
+        int circleRadius = 35;                // Radius for the circle representing nodes
+        int verticalSpacing = 100;            // Vertical spacing between levels
+        QLinearGradient gradient(0, 0, 1, 1); // Gradient for nodes
+        gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+        gradient.setColorAt(0, QColor(255, 105, 180)); // Strong pink
+        gradient.setColorAt(1, QColor(199, 21, 133));  // Deep pink
+        QPen linePen(QColor(0, 0, 0), 4);              // Thicker black lines
+        QFont textFont("Arial", 8, QFont::Bold);       // Font for the text
 
-        // Adding shadow effect
-        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
-        shadow->setBlurRadius(20); // Increased blur radius
-        shadow->setOffset(10, 10); // Increased shadow offset
-        circle->setGraphicsEffect(shadow);
+        // Calculate the maximum width at the bottom level
+        int maxLevel = static_cast<int>(std::log2(nodeCount));
+        int maxWidth = std::pow(2, maxLevel) * dx;
 
-        // Draw the text inside the circle
-        QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
-        text->setFont(textFont);
-        text->setDefaultTextColor(Qt::white); // Ensure text is visible against the gradient
-
-        // Center the text
-        QRectF textRect = text->boundingRect();
-        text->setPos(posX - textRect.width() / 2, posY - textRect.height() / 2);
-
-        if (index > 0)
+        for (int index = 0; index < nodeCount; ++index)
         {
-            int parentIndex = (index - 1) / 2;
-            int parentLevel = static_cast<int>(std::log2(parentIndex + 1));
-            int parentLevelStartIndex = std::pow(2, parentLevel) - 1;
-            int parentLevelOffset = parentIndex - parentLevelStartIndex;
-            int parentNodesInLevel = std::pow(2, parentLevel);
+            int level = static_cast<int>(std::log2(index + 1));
+            int levelStartIndex = std::pow(2, level) - 1;
+            int levelOffset = index - levelStartIndex;
+            int nodesInLevel = std::pow(2, level);
 
-            // Calculate parent positions
-            int parentPosX = x + (parentLevelOffset * maxWidth / parentNodesInLevel) - (maxWidth / 2 - dx / 2);
-            int parentPosY = y + parentLevel * verticalSpacing;
+            // Calculate horizontal position
+            int posX = x + (levelOffset * maxWidth / nodesInLevel) - (maxWidth / 2 - dx / 2);
+            int posY = y + level * verticalSpacing;
 
-            scene.addLine(posX, posY - circleRadius, parentPosX, parentPosY + circleRadius, linePen);
+            // Draw the circle for the node with gradient
+            QGraphicsEllipseItem *circle = scene.addEllipse(posX - circleRadius, posY - circleRadius, circleRadius * 2, circleRadius * 2);
+            circle->setBrush(gradient);
+            circle->setPen(QPen(Qt::black, 2)); // Thicker border for nodes
+
+            // Adding shadow effect
+            QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+            shadow->setBlurRadius(20); // Increased blur radius
+            shadow->setOffset(10, 10); // Increased shadow offset
+            circle->setGraphicsEffect(shadow);
+
+            // Draw the text inside the circle
+            QGraphicsTextItem *text = scene.addText(valueToQString(heap[index]->get_value()));
+            text->setFont(textFont);
+            text->setDefaultTextColor(Qt::white); // Ensure text is visible against the gradient
+
+            // Center the text
+            QRectF textRect = text->boundingRect();
+            text->setPos(posX - textRect.width() / 2, posY - textRect.height() / 2);
+
+            if (index > 0)
+            {
+                int parentIndex = (index - 1) / 2;
+                int parentLevel = static_cast<int>(std::log2(parentIndex + 1));
+                int parentLevelStartIndex = std::pow(2, parentLevel) - 1;
+                int parentLevelOffset = parentIndex - parentLevelStartIndex;
+                int parentNodesInLevel = std::pow(2, parentLevel);
+
+                // Calculate parent positions
+                int parentPosX = x + (parentLevelOffset * maxWidth / parentNodesInLevel) - (maxWidth / 2 - dx / 2);
+                int parentPosY = y + parentLevel * verticalSpacing;
+
+                scene.addLine(posX, posY - circleRadius, parentPosX, parentPosY + circleRadius, linePen);
+            }
         }
     }
-}
 
-void printHeap() const
-{
-    int argc = 0;
-    char *argv[] = {(char *)"HeapVisualizer"};
-    QApplication app(argc, argv);
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
-
-    std::vector<Node<T> *> heap;
-    HeapIterator heap_it(root);
-    while (heap_it != end_heap())
+    void printHeap() const
     {
-        heap.push_back(&(*heap_it));
-        ++heap_it;
+        int argc = 0;
+        char *argv[] = {(char *)"HeapVisualizer"};
+        QApplication app(argc, argv);
+        QGraphicsScene scene;
+        QGraphicsView view(&scene);
+
+        std::vector<Node<T> *> heap;
+        HeapIterator heap_it(root);
+        while (heap_it != end_heap())
+        {
+            heap.push_back(&(*heap_it));
+            ++heap_it;
+        }
+
+        drawHeap(scene, heap, 100, 50, 80); // Increase initial dx for maximum spacing at root level
+
+        view.show();
+        app.exec();
     }
-
-    drawHeap(scene, heap, 100, 50, 80); // Increase initial dx for maximum spacing at root level
-
-    view.show();
-    app.exec();
-}
 
     class Iterator
     {
@@ -760,5 +775,4 @@ private:
         }
         return nullptr;
     }
-   
 };
